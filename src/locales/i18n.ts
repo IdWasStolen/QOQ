@@ -29,10 +29,19 @@ i18n
     },
   });
 
-bitable.bridge.getLanguage().then((lng) => {
-  if (i18n.language !== lng) {
-    i18n.changeLanguage(lng);
+// 检查是否在飞书环境中
+if (typeof window !== 'undefined' && (window as any).bitable) {
+  try {
+    bitable.bridge.getLanguage().then((lng) => {
+      if (i18n.language !== lng) {
+        i18n.changeLanguage(lng);
+      }
+    }).catch(() => {
+      // 非飞书环境，使用浏览器语言
+    });
+  } catch (e) {
+    // 忽略错误
   }
-});
+}
 
 export default i18n;

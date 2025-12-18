@@ -27,7 +27,15 @@ interface IRowView {
   ratioNumber: number | null;
 }
 
+/** 检查是否在飞书环境中 */
+function isLarkEnv(): boolean {
+  return typeof window !== 'undefined' && !!(window as any).bitable && !!(window as any).dashboard;
+}
+
 async function fetchConfigTables() {
+  if (!isLarkEnv()) {
+    return [];
+  }
   try {
     const metaList = await bitable.base.getTableMetaList();
     return metaList ?? [];
@@ -39,6 +47,9 @@ async function fetchConfigTables() {
 }
 
 async function fetchFieldsByTableId(tableId: string) {
+  if (!isLarkEnv()) {
+    return [];
+  }
   try {
     const table = await bitable.base.getTableById(tableId);
     const fields = await table.getFieldMetaList();
@@ -51,7 +62,7 @@ async function fetchFieldsByTableId(tableId: string) {
 }
 
 async function fetchRecordsByConfig(config: IPluginConfig): Promise<IRecordLite[]> {
-  if (!config.tableId || !config.monthFieldId || !config.dimensionFieldId || !config.measureFieldId) {
+  if (!isLarkEnv() || !config.tableId || !config.monthFieldId || !config.dimensionFieldId || !config.measureFieldId) {
     return [];
   }
   const table = await bitable.base.getTableById(config.tableId);
@@ -114,8 +125,18 @@ function getPrevMonth(current: string): string | null {
 }
 
 export default function PeriodAnalysis() {
-  const isCreate = dashboard.state === DashboardState.Create;
-  const isConfigMode = dashboard.state === DashboardState.Config || isCreate;
+  const isLark = isLarkEnv();
+  let isCreate = false;
+  let isConfigMode = false;
+  
+  if (isLark) {
+    try {
+      isCreate = dashboard.state === DashboardState.Create;
+      isConfigMode = dashboard.state === DashboardState.Config || isCreate;
+    } catch (e) {
+      // 忽略错误
+    }
+  }
 
   const [config, setConfig] = useState<IPluginConfig>({});
   const [tables, setTables] = useState<any[]>([]);
@@ -231,6 +252,10 @@ export default function PeriodAnalysis() {
   }, [config.tableId, config.monthFieldId, config.dimensionFieldId, config.measureFieldId]);
 
   const saveCurrentConfig = async () => {
+    if (!isLarkEnv()) {
+      Toast.error('非飞书环境，无法保存配置');
+      return;
+    }
     try {
       await dashboard.saveConfig({
         customConfig: config,
@@ -247,6 +272,20 @@ export default function PeriodAnalysis() {
   const monthFieldOptions = fields.map(f => ({ label: f.name, value: f.id }));
   const dimensionFieldOptions = fields.map(f => ({ label: f.name, value: f.id }));
   const measureFieldOptions = fields.map(f => ({ label: f.name, value: f.id }));
+
+  // 非飞书环境显示提示
+  if (!isLark) {
+    return (
+      <main className="period-analysis-main" style={{ backgroundColor: bgColor, padding: '40px', textAlign: 'center' }}>
+        <Text strong style={{ fontSize: '18px', color: '#666' }}>
+          此插件需要在飞书多维表格环境中运行
+        </Text>
+        <div style={{ marginTop: '20px', color: '#999' }}>
+          <Text>请在飞书多维表格的仪表盘中添加此插件组件</Text>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="period-analysis-main" style={{ backgroundColor: bgColor }}>

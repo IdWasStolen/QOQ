@@ -33,19 +33,25 @@ export default function LoadApp(props: { children: ReactElement }): ReactElement
   const [locale, setLocale] = useState(en_US);
 
   useEffect(() => {
-    bitable.bridge.getLanguage().then((v) => {
-      if (v === 'zh') {
-        setLocale(zh_CN);
-        dayjs.locale('zh-cn');
-      }
+    // 检查是否在飞书环境中
+    if (typeof window !== 'undefined' && (window as any).bitable) {
+      try {
+        bitable.bridge.getLanguage().then((v) => {
+          if (v === 'zh') {
+            setLocale(zh_CN);
+            dayjs.locale('zh-cn');
+          }
 
-      if (v === 'ja') {
-        setLocale(ja_JP);
+          if (v === 'ja') {
+            setLocale(ja_JP);
+          }
+        }).catch((e) => {
+          console.error(e);
+        });
+      } catch (e) {
+        // 非飞书环境，使用默认语言
       }
-
-    }).catch((e) => {
-      console.error(e);
-    })
+    }
   }, [])
 
   return <div>
