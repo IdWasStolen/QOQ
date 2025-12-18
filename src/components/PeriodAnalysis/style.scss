@@ -48,7 +48,7 @@
   overflow: auto;
   background-color: #ffffff;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 12px 16px;
   box-sizing: border-box;
 }
 
@@ -58,6 +58,66 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.period-analysis-summary {
+  margin-bottom: 16px;
+}
+
+.summary-card {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: #f8fafc;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+  min-width: 220px;
+}
+
+.summary-title {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 30px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.summary-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.summary-sub + .summary-sub {
+  margin-top: 2px;
+}
+
+.summary-label {
+  margin-right: 4px;
+}
+
+.summary-ratio {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.summary-ratio-up {
+  color: #ef4444;
+}
+
+.summary-ratio-down {
+  color: #10b981;
+}
+
+.summary-ratio-neutral {
+  color: #6b7280;
 }
 
 

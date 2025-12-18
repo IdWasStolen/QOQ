@@ -126,6 +126,33 @@ export default function PeriodAnalysis() {
 
   const { bgColor } = useTheme();
 
+  // 汇总当前周期与上一周期的总值，用于顶部指标卡展示
+  const summary = useMemo(() => {
+    if (!currentMonth) {
+      return null;
+    }
+    const prev = getPrevMonth(currentMonth);
+    let currentTotal = 0;
+    let prevTotal = 0;
+
+    records.forEach(r => {
+      if (r.month === currentMonth) {
+        currentTotal += r.value;
+      }
+      if (prev && r.month === prev) {
+        prevTotal += r.value;
+      }
+    });
+
+    const ratio = calcRatio(currentTotal, prevTotal);
+    return {
+      currentTotal,
+      prevTotal,
+      ratioText: ratio.text,
+      ratioNumber: ratio.number,
+    };
+  }, [records, currentMonth]);
+
   const months = useMemo(() => {
     const set = new Set<string>();
     records.forEach(r => set.add(r.month));
@@ -319,6 +346,40 @@ export default function PeriodAnalysis() {
       )}
 
       <div className="period-analysis-content">
+        {summary && (
+          <div className="period-analysis-summary">
+            <div className="summary-card">
+              <div className="summary-title">指标卡</div>
+              <div className="summary-value">
+                {summary.currentTotal.toLocaleString?.() ?? summary.currentTotal}
+              </div>
+              <div className="summary-sub">
+                <span className="summary-label">当前周期：</span>
+                <span>{currentMonth}</span>
+              </div>
+              <div className="summary-sub">
+                <span className="summary-label">上一周期：</span>
+                <span>
+                  {getPrevMonth(currentMonth!) ?? '--'}
+                </span>
+              </div>
+              <div
+                className={
+                  summary.ratioNumber == null
+                    ? 'summary-ratio summary-ratio-neutral'
+                    : summary.ratioNumber > 0
+                    ? 'summary-ratio summary-ratio-up'
+                    : summary.ratioNumber < 0
+                    ? 'summary-ratio summary-ratio-down'
+                    : 'summary-ratio summary-ratio-neutral'
+                }
+              >
+                环比 {summary.ratioText}
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="period-analysis-loading">
             <Spin />
